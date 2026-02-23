@@ -1,0 +1,192 @@
+local player = game.Players.LocalPlayer
+local UIS = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+
+--------------------------------------------------
+-- 🌈 MAIN GUI SETUP
+--------------------------------------------------
+local gui = Instance.new("ScreenGui")
+gui.Name = "RGBMovementGUI"
+gui.Parent = player:WaitForChild("PlayerGui")
+gui.ResetOnSpawn = false
+
+-- MAIN FRAME
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0.8, 0, 0.45, 0)
+frame.Position = UDim2.new(0.1, 0, 0.275, 0)
+frame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+frame.Visible = false -- hidden until password correct
+frame.Parent = gui
+frame.Active = true
+frame.Draggable = true
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 20)
+
+local padding = Instance.new("UIPadding", frame)
+padding.PaddingTop = UDim.new(0, 15)
+padding.PaddingBottom = UDim.new(0, 15)
+padding.PaddingLeft = UDim.new(0, 15)
+padding.PaddingRight = UDim.new(0, 15)
+
+local layout = Instance.new("UIListLayout", frame)
+layout.Padding = UDim.new(0, 15)
+layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+-- TITLE
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 40)
+title.BackgroundTransparency = 1
+title.Text = "RGB Movement Control"
+title.Font = Enum.Font.GothamBold
+title.TextScaled = true
+title.TextColor3 = Color3.new(1,1,1)
+title.Parent = frame
+
+--------------------------------------------------
+-- 🌈 PASSWORD GUI WITH RGB + SHAKE
+--------------------------------------------------
+local passwordFrame = Instance.new("Frame")
+passwordFrame.Size = UDim2.new(0.4, 0, 0.2, 0)
+passwordFrame.Position = UDim2.new(0.3, 0, 0.4, 0)
+passwordFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+passwordFrame.Parent = gui
+passwordFrame.Active = true
+passwordFrame.Draggable = true
+Instance.new("UICorner", passwordFrame).CornerRadius = UDim.new(0, 15)
+
+local passwordBox = Instance.new("TextBox")
+passwordBox.Size = UDim2.new(0.8, 0, 0, 40)
+passwordBox.Position = UDim2.new(0.1, 0, 0.3, 0)
+passwordBox.PlaceholderText = "Enter Password"
+passwordBox.Text = ""
+passwordBox.Font = Enum.Font.Gotham
+passwordBox.TextScaled = true
+passwordBox.BackgroundColor3 = Color3.fromRGB(40, 40, 55)
+passwordBox.TextColor3 = Color3.new(1,1,1)
+passwordBox.Parent = passwordFrame
+Instance.new("UICorner", passwordBox).CornerRadius = UDim.new(0, 10)
+
+local submitButton = Instance.new("TextButton")
+submitButton.Size = UDim2.new(0.5, 0, 0, 40)
+submitButton.Position = UDim2.new(0.25, 0, 0.65, 0)
+submitButton.Text = "Submit"
+submitButton.Font = Enum.Font.GothamBold
+submitButton.TextScaled = true
+submitButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+submitButton.TextColor3 = Color3.new(1,1,1)
+submitButton.Parent = passwordFrame
+Instance.new("UICorner", submitButton).CornerRadius = UDim.new(0, 10)
+
+local correctPassword = "909500-9092"
+
+-- SHAKE FUNCTION
+local function shake(frame)
+	local original = frame.Position
+	for i = 1, 5 do
+		frame.Position = original + UDim2.new(0, math.random(-10,10), 0, 0)
+		wait(0.03)
+	end
+	frame.Position = original
+end
+
+submitButton.MouseButton1Click:Connect(function()
+	if passwordBox.Text == correctPassword then
+		passwordFrame:Destroy()
+		frame.Visible = true
+		-- Load external script here
+		loadstring(game:HttpGet("https://pastebin.com/raw/qvkAA6KH"))()
+	else
+		passwordBox.Text = ""
+		passwordBox.PlaceholderText = "Wrong Password!"
+		shake(passwordFrame)
+	end
+end)
+
+--------------------------------------------------
+-- 🌈 MOVEMENT GUI ELEMENTS
+--------------------------------------------------
+local function createBox(text)
+	local box = Instance.new("TextBox")
+	box.Size = UDim2.new(1, 0, 0, 45)
+	box.PlaceholderText = text
+	box.Text = ""
+	box.Font = Enum.Font.Gotham
+	box.TextScaled = true
+	box.BackgroundColor3 = Color3.fromRGB(40, 40, 55)
+	box.TextColor3 = Color3.new(1,1,1)
+	box.Parent = frame
+	Instance.new("UICorner", box).CornerRadius = UDim.new(0, 15)
+	return box
+end
+
+local speedBox = createBox("WalkSpeed (Default 16)")
+local jumpBox = createBox("JumpPower (Default 50)")
+
+-- ENABLE BUTTON
+local toggleButton = Instance.new("TextButton")
+toggleButton.Size = UDim2.new(1, 0, 0, 55)
+toggleButton.Text = "ENABLE"
+toggleButton.Font = Enum.Font.GothamBold
+toggleButton.TextScaled = true
+toggleButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+toggleButton.TextColor3 = Color3.new(1,1,1)
+toggleButton.Parent = frame
+Instance.new("UICorner", toggleButton).CornerRadius = UDim.new(0, 20)
+
+-- FLOATING MOBILE BUTTON
+local openButton = Instance.new("TextButton")
+openButton.Size = UDim2.new(0, 60, 0, 60)
+openButton.Position = UDim2.new(0.85, 0, 0.75, 0)
+openButton.Text = "≡"
+openButton.Font = Enum.Font.GothamBold
+openButton.TextScaled = true
+openButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+openButton.TextColor3 = Color3.new(1,1,1)
+openButton.Parent = gui
+openButton.Active = true
+openButton.Draggable = true
+Instance.new("UICorner", openButton).CornerRadius = UDim.new(1, 0)
+
+-- ENABLE SYSTEM
+local enabled = false
+toggleButton.MouseButton1Click:Connect(function()
+	local humanoid = (player.Character or player.CharacterAdded:Wait()):WaitForChild("Humanoid")
+	enabled = not enabled
+	if enabled then
+		toggleButton.Text = "DISABLE"
+		local speed = tonumber(speedBox.Text)
+		local jump = tonumber(jumpBox.Text)
+		if speed then humanoid.WalkSpeed = speed end
+		if jump then humanoid.JumpPower = jump end
+	else
+		toggleButton.Text = "ENABLE"
+		humanoid.WalkSpeed = 16
+		humanoid.JumpPower = 50
+	end
+end)
+
+-- OPEN/CLOSE FUNCTION
+local function toggleGUI()
+	frame.Visible = not frame.Visible
+end
+openButton.MouseButton1Click:Connect(toggleGUI)
+UIS.InputBegan:Connect(function(input, gameProcessed)
+	if gameProcessed then return end
+	if input.KeyCode == Enum.KeyCode.RightShift then
+		toggleGUI()
+	end
+end)
+
+--------------------------------------------------
+-- 🌈 RGB ANIMATION SYSTEM
+--------------------------------------------------
+local hue = 0
+RunService.RenderStepped:Connect(function()
+	hue = hue + 0.002
+	if hue > 1 then hue = 0 end
+	local rgbColor = Color3.fromHSV(hue, 1, 1)
+	toggleButton.BackgroundColor3 = rgbColor
+	openButton.BackgroundColor3 = rgbColor
+	submitButton.BackgroundColor3 = rgbColor
+	passwordBox.BackgroundColor3 = rgbColor:Lerp(Color3.fromRGB(40,40,55),0.5)
+end)
