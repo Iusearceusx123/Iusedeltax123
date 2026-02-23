@@ -1,13 +1,10 @@
 --==================================================
--- 🔒 GLOBAL DUPLICATE PROTECTION
+-- 🔒 DUPLICATE PROTECTION
 --==================================================
 
 local player = game.Players.LocalPlayer
-
 local old = player.PlayerGui:FindFirstChild("RGBMovementGUI")
-if old then
-	old:Destroy()
-end
+if old then old:Destroy() end
 
 --==================================================
 -- SERVICES
@@ -15,183 +12,237 @@ end
 
 local UIS = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local Lighting = game:GetService("Lighting")
 
 --==================================================
--- 🌈 GUI SETUP
+-- GUI SETUP
 --==================================================
 
 local gui = Instance.new("ScreenGui")
 gui.Name = "RGBMovementGUI"
 gui.Parent = player:WaitForChild("PlayerGui")
 gui.ResetOnSpawn = false
+gui.IgnoreGuiInset = true
 
 --==================================================
--- 🔐 PASSWORD FRAME
---==================================================
-
-local passwordFrame = Instance.new("Frame")
-passwordFrame.Size = UDim2.new(0.4, 0, 0.2, 0)
-passwordFrame.Position = UDim2.new(0.3, 0, 0.4, 0)
-passwordFrame.BackgroundColor3 = Color3.fromRGB(30,30,40)
-passwordFrame.Parent = gui
-passwordFrame.Active = true
-passwordFrame.Draggable = true
-Instance.new("UICorner", passwordFrame).CornerRadius = UDim.new(0,15)
-
-local passwordBox = Instance.new("TextBox")
-passwordBox.Size = UDim2.new(0.8, 0, 0, 40)
-passwordBox.Position = UDim2.new(0.1, 0, 0.3, 0)
-passwordBox.PlaceholderText = "Enter Password"
-passwordBox.Font = Enum.Font.Gotham
-passwordBox.TextScaled = true
-passwordBox.BackgroundColor3 = Color3.fromRGB(40,40,55)
-passwordBox.TextColor3 = Color3.new(1,1,1)
-passwordBox.ClearTextOnFocus = false
-passwordBox.Parent = passwordFrame
-Instance.new("UICorner", passwordBox).CornerRadius = UDim.new(0,10)
-
-local submitButton = Instance.new("TextButton")
-submitButton.Size = UDim2.new(0.5, 0, 0, 40)
-submitButton.Position = UDim2.new(0.25, 0, 0.65, 0)
-submitButton.Text = "Submit"
-submitButton.Font = Enum.Font.GothamBold
-submitButton.TextScaled = true
-submitButton.TextColor3 = Color3.new(1,1,1)
-submitButton.Parent = passwordFrame
-Instance.new("UICorner", submitButton).CornerRadius = UDim.new(0,10)
-
-local correctPassword = "909500-9092"
-
---==================================================
--- 🌈 MAIN FRAME (HIDDEN UNTIL PASSWORD CORRECT)
---==================================================
-
-local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0.8, 0, 0.45, 0)
-frame.Position = UDim2.new(0.1, 0, 0.275, 0)
-frame.BackgroundColor3 = Color3.fromRGB(25,25,35)
-frame.Visible = false
-frame.Parent = gui
-frame.Active = true
-frame.Draggable = true
-Instance.new("UICorner", frame).CornerRadius = UDim.new(0,20)
-
-local layout = Instance.new("UIListLayout", frame)
-layout.Padding = UDim.new(0,15)
-layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-
--- TITLE
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1,0,0,40)
-title.BackgroundTransparency = 1
-title.Text = "RGB Movement Control"
-title.Font = Enum.Font.GothamBold
-title.TextScaled = true
-title.TextColor3 = Color3.new(1,1,1)
-title.Parent = frame
-
---==================================================
--- MOVEMENT SYSTEM
---==================================================
-
-local function createBox(text)
-	local box = Instance.new("TextBox")
-	box.Size = UDim2.new(1,0,0,45)
-	box.PlaceholderText = text
-	box.Font = Enum.Font.Gotham
-	box.TextScaled = true
-	box.BackgroundColor3 = Color3.fromRGB(40,40,55)
-	box.TextColor3 = Color3.new(1,1,1)
-	box.Parent = frame
-	Instance.new("UICorner", box).CornerRadius = UDim.new(0,15)
-	return box
-end
-
-local speedBox = createBox("WalkSpeed (Default 16)")
-local jumpBox = createBox("JumpPower (Default 50)")
-
-local toggleButton = Instance.new("TextButton")
-toggleButton.Size = UDim2.new(1,0,0,55)
-toggleButton.Text = "ENABLE"
-toggleButton.Font = Enum.Font.GothamBold
-toggleButton.TextScaled = true
-toggleButton.TextColor3 = Color3.new(1,1,1)
-toggleButton.Parent = frame
-Instance.new("UICorner", toggleButton).CornerRadius = UDim.new(0,20)
-
-local enabled = false
-
-toggleButton.MouseButton1Click:Connect(function()
-	local humanoid = (player.Character or player.CharacterAdded:Wait()):WaitForChild("Humanoid")
-	enabled = not enabled
-	
-	if enabled then
-		toggleButton.Text = "DISABLE"
-		local speed = tonumber(speedBox.Text)
-		local jump = tonumber(jumpBox.Text)
-		if speed then humanoid.WalkSpeed = speed end
-		if jump then humanoid.JumpPower = jump end
-	else
-		toggleButton.Text = "ENABLE"
-		humanoid.WalkSpeed = 16
-		humanoid.JumpPower = 50
-	end
-end)
-
---==================================================
--- MOBILE BUTTON
---==================================================
-
-local openButton = Instance.new("TextButton")
-openButton.Size = UDim2.new(0,60,0,60)
-openButton.Position = UDim2.new(0.85,0,0.75,0)
-openButton.Text = "≡"
-openButton.Font = Enum.Font.GothamBold
-openButton.TextScaled = true
-openButton.TextColor3 = Color3.new(1,1,1)
-openButton.Parent = gui
-openButton.Active = true
-openButton.Draggable = true
-Instance.new("UICorner", openButton).CornerRadius = UDim.new(1,0)
-
-openButton.MouseButton1Click:Connect(function()
-	frame.Visible = not frame.Visible
-end)
-
-UIS.InputBegan:Connect(function(input,gpe)
-	if gpe then return end
-	if input.KeyCode == Enum.KeyCode.RightShift then
-		frame.Visible = not frame.Visible
-	end
-end)
-
---==================================================
--- PASSWORD LOGIC
---==================================================
-
-submitButton.MouseButton1Click:Connect(function()
-	if passwordBox.Text == correctPassword then
-		passwordFrame:Destroy()
-		frame.Visible = true
-	else
-		passwordBox.Text = ""
-		passwordBox.PlaceholderText = "Wrong Password!"
-	end
-end)
-
---==================================================
--- RGB SYSTEM (CONNECTED TO ALL)
+-- 🌈 RGB SYSTEM
 --==================================================
 
 local hue = 0
+local currentRGB = Color3.fromRGB(255,0,0)
+
 RunService.RenderStepped:Connect(function()
 	hue += 0.002
 	if hue > 1 then hue = 0 end
+	currentRGB = Color3.fromHSV(hue,1,1)
+end)
+
+--==================================================
+-- 🌫 BACKGROUND BLUR
+--==================================================
+
+local blur = Instance.new("BlurEffect")
+blur.Size = 0
+blur.Parent = Lighting
+
+local function enableBlur()
+	TweenService:Create(blur, TweenInfo.new(0.4), {Size = 18}):Play()
+end
+
+local function disableBlur()
+	TweenService:Create(blur, TweenInfo.new(0.4), {Size = 0}):Play()
+end
+
+--==================================================
+-- 🔐 PASSWORD FRAME (GLASS)
+--==================================================
+
+local correctPassword = "909500-9092"
+
+local passwordFrame = Instance.new("Frame")
+passwordFrame.Size = UDim2.new(0.9,0,0.35,0)
+passwordFrame.Position = UDim2.new(0.05,0,1,0)
+passwordFrame.BackgroundColor3 = Color3.fromRGB(255,255,255)
+passwordFrame.BackgroundTransparency = 0.88
+passwordFrame.Parent = gui
+passwordFrame.Active = true
+passwordFrame.Draggable = true
+Instance.new("UICorner", passwordFrame).CornerRadius = UDim.new(0,30)
+
+local stroke = Instance.new("UIStroke", passwordFrame)
+stroke.Thickness = 2
+
+local passwordBox = Instance.new("TextBox")
+passwordBox.Size = UDim2.new(0.9,0,0.3,0)
+passwordBox.Position = UDim2.new(0.05,0,0.2,0)
+passwordBox.PlaceholderText = "Enter Password"
+passwordBox.TextScaled = true
+passwordBox.Font = Enum.Font.Gotham
+passwordBox.TextColor3 = Color3.new(1,1,1)
+passwordBox.BackgroundTransparency = 0.9
+passwordBox.BackgroundColor3 = Color3.fromRGB(255,255,255)
+passwordBox.ClearTextOnFocus = false
+passwordBox.Parent = passwordFrame
+passwordBox.TextXAlignment = Enum.TextXAlignment.Center
+passwordBox.TextYAlignment = Enum.TextYAlignment.Center
+passwordBox.Text = ""
+passwordBox:SetAttribute("RealText","")
+Instance.new("UICorner", passwordBox).CornerRadius = UDim.new(0,20)
+
+-- Secure password hiding
+passwordBox:GetPropertyChangedSignal("Text"):Connect(function()
+	local real = passwordBox:GetAttribute("RealText") or ""
+	local newText = passwordBox.Text
 	
-	local rgb = Color3.fromHSV(hue,1,1)
+	if #newText > #real then
+		real = real .. newText:sub(-1)
+	elseif #newText < #real then
+		real = real:sub(1,#newText)
+	end
 	
-	toggleButton.BackgroundColor3 = rgb
-	openButton.BackgroundColor3 = rgb
-	submitButton.BackgroundColor3 = rgb
-	passwordBox.BackgroundColor3 = rgb:Lerp(Color3.fromRGB(40,40,55),0.5)
+	passwordBox:SetAttribute("RealText", real)
+	passwordBox.Text = string.rep("•", #real)
+end)
+
+local submit = Instance.new("TextButton")
+submit.Size = UDim2.new(0.6,0,0.25,0)
+submit.Position = UDim2.new(0.2,0,0.65,0)
+submit.Text = "Unlock"
+submit.Font = Enum.Font.GothamBold
+submit.TextScaled = true
+submit.TextColor3 = Color3.new(1,1,1)
+submit.BackgroundTransparency = 0.8
+submit.BackgroundColor3 = Color3.fromRGB(255,255,255)
+submit.Parent = passwordFrame
+Instance.new("UICorner", submit).CornerRadius = UDim.new(0,25)
+
+-- Animate open
+enableBlur()
+TweenService:Create(passwordFrame, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {
+	Position = UDim2.new(0.05,0,0.325,0)
+}):Play()
+
+--==================================================
+-- 💎 LOAD MAIN GUI
+--==================================================
+
+local function loadMain()
+
+	disableBlur()
+	passwordFrame:Destroy()
+
+	local frame = Instance.new("Frame")
+	frame.Size = UDim2.new(0.92,0,0.65,0)
+	frame.Position = UDim2.new(0.04,0,1,0)
+	frame.BackgroundColor3 = Color3.fromRGB(255,255,255)
+	frame.BackgroundTransparency = 0.88
+	frame.Parent = gui
+	frame.Active = true
+	frame.Draggable = true
+	Instance.new("UICorner", frame).CornerRadius = UDim.new(0,35)
+
+	local stroke2 = Instance.new("UIStroke", frame)
+	stroke2.Thickness = 3
+
+	local layout = Instance.new("UIListLayout", frame)
+	layout.Padding = UDim.new(0.04,0)
+	layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+	local padding = Instance.new("UIPadding", frame)
+	padding.PaddingTop = UDim.new(0.05,0)
+	padding.PaddingLeft = UDim.new(0.05,0)
+	padding.PaddingRight = UDim.new(0.05,0)
+
+	local title = Instance.new("TextLabel")
+	title.Size = UDim2.new(1,0,0.12,0)
+	title.BackgroundTransparency = 1
+	title.Text = "ULTRA RGB MOVEMENT"
+	title.Font = Enum.Font.GothamBold
+	title.TextScaled = true
+	title.TextColor3 = Color3.new(1,1,1)
+	title.Parent = frame
+
+	local function createBox(text)
+		local box = Instance.new("TextBox")
+		box.Size = UDim2.new(1,0,0.13,0)
+		box.PlaceholderText = text
+		box.Font = Enum.Font.Gotham
+		box.TextScaled = true
+		box.TextColor3 = Color3.new(1,1,1)
+		box.BackgroundTransparency = 0.9
+		box.BackgroundColor3 = Color3.fromRGB(255,255,255)
+		box.Parent = frame
+		Instance.new("UICorner", box).CornerRadius = UDim.new(0,25)
+		return box
+	end
+
+	local speedBox = createBox("WalkSpeed (16)")
+	local jumpBox = createBox("JumpPower (50)")
+
+	local toggle = Instance.new("TextButton")
+	toggle.Size = UDim2.new(1,0,0.15,0)
+	toggle.Text = "ENABLE"
+	toggle.Font = Enum.Font.GothamBold
+	toggle.TextScaled = true
+	toggle.TextColor3 = Color3.new(1,1,1)
+	toggle.BackgroundTransparency = 0.8
+	toggle.BackgroundColor3 = Color3.fromRGB(255,255,255)
+	toggle.Parent = frame
+	Instance.new("UICorner", toggle).CornerRadius = UDim.new(0,30)
+
+	local close = Instance.new("TextButton")
+	close.Size = UDim2.new(0.12,0,0.1,0)
+	close.Position = UDim2.new(0.88,0,0.02,0)
+	close.Text = "X"
+	close.Font = Enum.Font.GothamBold
+	close.TextScaled = true
+	close.TextColor3 = Color3.new(1,0.3,0.3)
+	close.BackgroundTransparency = 1
+	close.Parent = frame
+
+	local enabled = false
+
+	toggle.MouseButton1Click:Connect(function()
+		local humanoid = (player.Character or player.CharacterAdded:Wait()):WaitForChild("Humanoid")
+		enabled = not enabled
+
+		if enabled then
+			toggle.Text = "DISABLE"
+			if tonumber(speedBox.Text) then
+				humanoid.WalkSpeed = tonumber(speedBox.Text)
+			end
+			if tonumber(jumpBox.Text) then
+				humanoid.JumpPower = tonumber(jumpBox.Text)
+			end
+		else
+			toggle.Text = "ENABLE"
+			humanoid.WalkSpeed = 16
+			humanoid.JumpPower = 50
+		end
+	end)
+
+	close.MouseButton1Click:Connect(function()
+		frame.Visible = false
+	end)
+
+	RunService.RenderStepped:Connect(function()
+		stroke2.Color = currentRGB
+		stroke.Color = currentRGB
+		toggle.BackgroundColor3 = currentRGB
+	end)
+
+	enableBlur()
+	TweenService:Create(frame, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {
+		Position = UDim2.new(0.04,0,0.18,0)
+	}):Play()
+end
+
+-- Password Check
+submit.MouseButton1Click:Connect(function()
+	if passwordBox:GetAttribute("RealText") == correctPassword then
+		loadMain()
+	else
+		passwordBox.PlaceholderText = "Wrong Password"
+	end
 end)
